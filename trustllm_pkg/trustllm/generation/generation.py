@@ -26,7 +26,8 @@ class LLMGeneration:
                  num_gpus=1,
                  max_new_tokens=512,
                  debug=False,
-                 device=''
+                 device='',
+                 load_model_kwargs=None
                  ):
         self.model_name = ""
         self.model_path = model_path
@@ -42,6 +43,7 @@ class LLMGeneration:
         self.debug = debug
         self.online_model_list = get_models()[1]
         self.model_mapping = get_models()[0]
+        self.load_model_kwargs = load_model_kwargs or {}
         if not device:
             self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         else:
@@ -279,6 +281,7 @@ class LLMGeneration:
                     num_gpus=self.num_gpus,
                     device=self.device,
                     debug=self.debug,
+                    **self.load_model_kwargs
                 )
 
         test_functions = {

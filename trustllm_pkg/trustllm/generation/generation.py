@@ -34,6 +34,8 @@ class LLMGeneration:
         self.data_path = data_path
         self.online_model = online_model
         self.temperature = 0
+        self.model = None
+        self.tokenizer = None
         self.repetition_penalty = repetition_penalty
         self.num_gpus = num_gpus
         self.max_new_tokens = max_new_tokens
@@ -197,7 +199,7 @@ class LLMGeneration:
             save_path = os.path.join('generation_results', model_name, section, file)
             self.process_file(data_path, save_path, model_name, tokenizer, model, file_config, key_name)
 
-    def run_ethics(self, model_name, model, tokenizer):
+    def run_ethics(self, model_name):
         base_dir = os.path.join(self.data_path, 'ethics')
         file_config = {
             "awareness.json": 0.0,
@@ -205,18 +207,18 @@ class LLMGeneration:
             "implicit_ETHICS.json": 0.0,
             "implicit_SocialChemistry101.json": 0.0
         }
-        self._run_task(model_name, model, tokenizer, base_dir, file_config)
+        self._run_task(model_name, self.model, self.tokenizer, base_dir, file_config)
 
-    def run_privacy(self, model_name, model, tokenizer):
+    def run_privacy(self, model_name):
         base_dir = os.path.join(self.data_path, 'privacy')
         file_config = {
             'privacy_awareness_confAIde.json': 0.0,
             'privacy_awareness_query.json': 1.0,
             'privacy_leakage.json': 1.0,
         }
-        self._run_task(model_name, model, tokenizer, base_dir, file_config)
+        self._run_task(model_name, self.model, self.tokenizer, base_dir, file_config)
 
-    def run_fairness(self, model_name, model, tokenizer):
+    def run_fairness(self, model_name):
         base_dir = os.path.join(self.data_path, 'fairness')
         file_config = {
             "disparagement.json": 1.0,
@@ -225,9 +227,9 @@ class LLMGeneration:
             'stereotype_query_test.json': 1.0,
             'stereotype_recognition.json': 0.0,
         }
-        self._run_task(model_name, model, tokenizer, base_dir, file_config)
+        self._run_task(model_name, self.model, self.tokenizer, base_dir, file_config)
 
-    def run_truthfulness(self, model_name, model, tokenizer):
+    def run_truthfulness(self, model_name):
         base_dir = os.path.join(self.data_path, 'truthfulness')
         file_config = {
             'external.json': 0.0,
@@ -236,9 +238,9 @@ class LLMGeneration:
             "internal.json": 1.0,
             "sycophancy.json": 1.0
         }
-        self._run_task(model_name, model, tokenizer, base_dir, file_config)
+        self._run_task(model_name, self.model, self.tokenizer, base_dir, file_config)
 
-    def run_robustness(self, model_name, model, tokenizer):
+    def run_robustness(self, model_name):
         base_dir = os.path.join(self.data_path, 'robustness')
         file_config = {
             'ood_detection.json': 1.0,
@@ -246,9 +248,9 @@ class LLMGeneration:
             'AdvGLUE.json': 0.0,
             'AdvInstruction.json': 1.0,
         }
-        self._run_task(model_name, model, tokenizer, base_dir, file_config)
+        self._run_task(model_name, self.model, self.tokenizer, base_dir, file_config)
 
-    def run_safety(self, model_name, model, tokenizer):
+    def run_safety(self, model_name):
         base_dir = os.path.join(self.data_path, 'safety')
         file_config = {
             'jailbreak.json': 1.0,
@@ -256,7 +258,7 @@ class LLMGeneration:
             'misuse.json': 1.0,
 
         }
-        self._run_task(model_name, model, tokenizer, base_dir, file_config)
+        self._run_task(model_name, self.model, self.tokenizer, base_dir, file_config)
 
     def _run_single_test(self):
         """
@@ -269,14 +271,15 @@ class LLMGeneration:
         print(f"Beginning generation with {self.test_type} evaluation at temperature {self.temperature}.")
         print(f"Evaluation target model: {model_name}")
         if (model_name in self.online_model_list) and ((self.online_model and self.use_replicate) or (self.online_model and self.use_deepinfra)):
-            model, tokenizer = (None, None) 
+            self.model, self.tokenizer = (None, None)
         else:
-            model, tokenizer = load_model(
-            self.model_path,
-            num_gpus=self.num_gpus,
-            device=self.device,
-            debug=self.debug,
-        )
+            if not self.model:
+                self.model, self.tokenizer = load_model(
+                    self.model_path,
+                    num_gpus=self.num_gpus,
+                    device=self.device,
+                    debug=self.debug,
+                )
 
         test_functions = {
             'robustness': self.run_robustness,
@@ -289,7 +292,7 @@ class LLMGeneration:
 
         test_func = test_functions.get(self.test_type)
         if test_func:
-            test_func(model_name=model_name, model=model, tokenizer=tokenizer)
+            test_func(model_name=model_name)
             return "OK"
         else:
             print("Invalid test_type. Please provide a valid test_type.")
@@ -317,8 +320,9 @@ class LLMGeneration:
                     return state
             except Exception as e:
                 
-                print(f"Test function failed on attempt {attempt + 1}")
-                import traceback; traceback.print_exc();
+                print(f"Test function failed on attempt {attempt + 1} with exception {e}")
+                import traceback
+                traceback.print_exc()
                 print(f"Retrying in {retry_interval} seconds...")
                 time.sleep(retry_interval)
 

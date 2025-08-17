@@ -276,6 +276,15 @@ class LLMGeneration:
             self.model, self.tokenizer = (None, None)
         else:
             if not self.model:
+                if self.model_path == "mattany/SciComma-3.3-70B-Instruct-lora":
+                    from unsloth import FastLanguageModel
+                    self.model, self.tokenizer = FastLanguageModel.from_pretrained(
+                        model_name=self.model_path,
+                        dtype=None,
+                        load_in_4bit=True,
+                    )
+                    FastLanguageModel.for_inference(self.model)  # Enable native 2x faster inference
+
                 self.model, self.tokenizer = load_model(
                     self.model_path,
                     num_gpus=self.num_gpus,

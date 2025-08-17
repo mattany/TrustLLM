@@ -276,7 +276,7 @@ class LLMGeneration:
             self.model, self.tokenizer = (None, None)
         else:
             if not self.model:
-                if self.model_path == "mattany/SciComma-3.3-70B-Instruct-lora":
+                if "lora" in self.model_path or "4bit" in self.model_path:
                     from unsloth import FastLanguageModel
                     self.model, self.tokenizer = FastLanguageModel.from_pretrained(
                         model_name=self.model_path,

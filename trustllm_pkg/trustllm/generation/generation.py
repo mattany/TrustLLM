@@ -282,16 +282,17 @@ class LLMGeneration:
                         model_name=self.model_path,
                         dtype=None,
                         load_in_4bit=True,
+                        offload_to_cpu=True
                     )
                     FastLanguageModel.for_inference(self.model)  # Enable native 2x faster inference
-
-                self.model, self.tokenizer = load_model(
-                    self.model_path,
-                    num_gpus=self.num_gpus,
-                    device=self.device,
-                    debug=self.debug,
-                    **self.load_model_kwargs
-                )
+                else:
+                    self.model, self.tokenizer = load_model(
+                        self.model_path,
+                        num_gpus=self.num_gpus,
+                        device=self.device,
+                        debug=self.debug,
+                        **self.load_model_kwargs
+                    )
 
         test_functions = {
             'robustness': self.run_robustness,

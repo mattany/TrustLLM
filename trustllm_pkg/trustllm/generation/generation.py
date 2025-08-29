@@ -282,7 +282,6 @@ class LLMGeneration:
                         model_name=self.model_path,
                         dtype=None,
                         load_in_4bit=True,
-                        offload_to_cpu=True
                     )
                     FastLanguageModel.for_inference(self.model)  # Enable native 2x faster inference
                 else:

@@ -277,7 +277,6 @@ class LLMGeneration:
         else:
             if not self.model:
                 if "lora" in self.model_path or "4bit" in self.model_path:
-                    from unsloth import FastLanguageModel
                     self.model, self.tokenizer = FastLanguageModel.from_pretrained(
                         model_name=self.model_path,
                         dtype=None,

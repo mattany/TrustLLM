@@ -75,7 +75,6 @@ class LLMGeneration:
             temperature=temperature,
             repetition_penalty=self.repetition_penalty,
             max_new_tokens=self.max_new_tokens,
-            use_cache=True
         )
         if model.config.is_encoder_decoder:
             output_ids = output_ids[0]

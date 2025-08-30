@@ -284,7 +284,7 @@ class LLMGeneration:
                         dtype=None,
                         load_in_4bit=True,
                     )
-                    FastLanguageModel.for_inference(self.model)  # Enable native 2x faster inference
+                    # FastLanguageModel.for_inference(self.model)  # Enable native 2x faster inference
                 else:
                     self.model, self.tokenizer = load_model(
                         self.model_path,
